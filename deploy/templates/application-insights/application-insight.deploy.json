@@ -1,0 +1,44 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "name": {
+            "type": "string"
+        },
+        "type": {
+            "type": "string"
+        },
+        "regionId": {
+            "type": "string"
+        },
+        "tagsArray": {
+            "type": "object"
+        },
+        "requestSource": {
+            "type": "string"
+        },
+        "logAnalyticsWorkspaceName": {
+            "type": "string"
+        }
+    },
+    "variables": {
+        "workspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('logAnalyticsWorkspaceName'))]"
+    },
+    "resources": [
+        {
+            "name": "[parameters('name')]",
+            "type": "microsoft.insights/components",
+            "location": "[parameters('regionId')]",
+            "tags": "[parameters('tagsArray')]",
+            "apiVersion": "2020-02-02-preview",
+            "dependsOn": [],
+            "properties": {
+                "ApplicationId": "[parameters('name')]",
+                "Application_Type": "[parameters('type')]",
+                "Flow_Type": "Bluefield",
+                "WorkspaceResourceId": "[variables('workspaceResourceId')]",
+                "Request_Source": "[parameters('requestSource')]"
+            }
+        }
+    ]
+}

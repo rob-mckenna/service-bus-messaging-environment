@@ -1,0 +1,23 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "serviceBusNamespaceName": {
+        "value": "<SERVICE_BUS_NAMESPACE_NAME>"
+      },
+      "serviceBusSku": {
+        "value": "Standard"
+      },
+      "location": {
+        "value": "<LOCATION>"
+      },
+      "serviceBusQueueName": {
+        "value": "<QUEUE_NAME>"
+      },
+      "tags": {
+          "value": {
+            "": ""
+          }
+      }
+    }
+  }

@@ -1,0 +1,169 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string"
+        },
+        "apimName": {
+            "type": "string"
+        },
+        "organizationName": {
+            "type": "string"
+        },
+        "adminEmail": {
+            "type": "string"
+        },
+        "tier": {
+            "type": "string"
+        },
+        "appInsightsOption": {
+            "type": "bool"
+        },
+        "appInsightsObject": {
+            "type": "object"
+        },
+        "appInsightsInstrumentationKey": {
+            "type": "string"
+        },
+        "capacity": {
+            "type": "string"
+        },
+        "identity": {
+            "type": "object"
+        },
+        "virtualNetworkType": {
+            "type": "string"
+        },
+        "vnet": {
+            "type": "object"
+        },
+        "tripleDES": {
+            "type": "bool"
+        },
+        "http2": {
+            "type": "bool"
+        },
+        "clientTls11": {
+            "type": "bool"
+        },
+        "clientTls10": {
+            "type": "bool"
+        },
+        "clientSsl30": {
+            "type": "bool"
+        },
+        "backendTls11": {
+            "type": "bool"
+        },
+        "backendTls10": {
+            "type": "bool"
+        },
+        "backendSsl30": {
+            "type": "bool"
+        },
+        "tagsByResource": {
+            "type": "object"
+        }
+    },
+    "variables": {
+        "customPropertiesNonConsumption": {
+            "Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Ciphers.TripleDes168": "[parameters('tripleDES')]",
+            "Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Protocols.Tls11": "[parameters('clientTls11')]",
+            "Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Protocols.Tls10": "[parameters('clientTls10')]",
+            "Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Protocols.Ssl30": "[parameters('clientSsl30')]",
+            "Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Backend.Protocols.Tls11": "[parameters('backendTls11')]",
+            "Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Backend.Protocols.Tls10": "[parameters('backendTls10')]",
+            "Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Backend.Protocols.Ssl30": "[parameters('backendSsl30')]",
+            "Microsoft.WindowsAzure.ApiManagement.Gateway.Protocols.Server.Http2": "[parameters('http2')]"
+        },
+        "customPropertiesConsumption": {
+            "Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Protocols.Tls11": "[parameters('clientTls11')]",
+            "Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Protocols.Tls10": "[parameters('clientTls10')]",
+            "Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Backend.Protocols.Tls11": "[parameters('backendTls11')]",
+            "Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Backend.Protocols.Tls10": "[parameters('backendTls10')]",
+            "Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Backend.Protocols.Ssl30": "[parameters('backendSsl30')]",
+            "Microsoft.WindowsAzure.ApiManagement.Gateway.Protocols.Server.Http2": "[parameters('http2')]"
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2020-04-01",
+            "name": "[if(equals(parameters('virtualNetworkType'), 'None'), 'vnet9901' ,parameters('vnet').name)]",
+            "location": "[parameters('location')]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": "[if(equals(parameters('virtualNetworkType'), 'None'), array('13.41.6.0/26') , parameters('vnet').addressPrefixes)]"
+                },
+                "subnets": [
+                    {
+                        "name": "[if(equals(parameters('virtualNetworkType'), 'None'), 'default9901' ,parameters('vnet').subnets.subnet.name)]",
+                        "properties": {
+                            "addressPrefix": "[if(equals(parameters('virtualNetworkType'), 'None'), '13.41.6.0/26' , parameters('vnet').subnets.subnet.addressPrefix)]"
+                        }
+                    }
+                ]
+            },
+            "condition": "[and(and(not(empty(parameters('vnet'))), equals(parameters('vnet').newOrExisting, 'new')), not(equals(parameters('virtualNetworkType'), 'None')))]"
+        },
+        {
+            "type": "Microsoft.ApiManagement/service",
+            "apiVersion": "2019-01-01",
+            "name": "[parameters('apimName')]",
+            "location": "[parameters('location')]",
+            "sku": {
+                "name": "[parameters('tier')]",
+                "capacity": "[parameters('capacity')]"
+            },
+            "identity": "[parameters('identity')]",
+            "tags": "[ if(contains(parameters('tagsByResource'), 'Microsoft.ApiManagement/service'), parameters('tagsByResource')['Microsoft.ApiManagement/service'], json('{}')) ]",
+            "properties": {
+                "publisherEmail": "[parameters('adminEmail')]",
+                "publisherName": "[parameters('organizationName')]",
+                "virtualNetworkType": "[parameters('virtualNetworkType')]",
+                "virtualNetworkConfiguration": "[if(not(equals(parameters('virtualNetworkType'), 'None')) ,json(concat('{\"subnetResourceId\": \"', resourceId(parameters('vnet').resourceGroup, 'Microsoft.Network/virtualNetworks/subnets', parameters('vnet').name, parameters('vnet').subnets.subnet.name), '\"}')), json('null'))]",
+                "customProperties": "[if(equals(parameters('tier'), 'Consumption'), variables('customPropertiesConsumption'), variables('customPropertiesNonConsumption'))]"
+            },
+            "dependsOn": [
+                "[if(equals(parameters('virtualNetworkType'), 'None'), 'vnet9901', parameters('vnet').name)]"
+            ],
+            "resources": [
+                {
+                    "condition": "[parameters('appInsightsOption')]",
+                    "type": "loggers",
+                    "apiVersion": "2019-01-01",
+                    "name": "[parameters('appInsightsObject').name]",
+                    "dependsOn": [
+                        "[concat('Microsoft.ApiManagement/service/', parameters('apimName'))]"
+                    ],
+                    "properties": {
+                        "loggerType": "applicationInsights",
+                        "resourceId": "[parameters('appInsightsObject').id]",
+                        "credentials": {
+                            "instrumentationKey": "[parameters('appInsightsInstrumentationKey')]"
+                        }
+                    }
+                },
+                {
+                    "condition": "[parameters('appInsightsOption')]",
+                    "type": "diagnostics",
+                    "apiVersion": "2019-01-01",
+                    "name": "applicationinsights",
+                    "dependsOn": [
+                        "[concat('Microsoft.ApiManagement/service/', parameters('apimName'))]",
+                        "[concat('Microsoft.ApiManagement/service/', parameters('apimName'), '/loggers/', parameters('appInsightsObject').name)]"
+                    ],
+                    "properties": {
+                        "loggerId": "[concat('/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ApiManagement/service/', parameters('apimName'), '/loggers/', parameters('appInsightsObject').name)]",
+                        "alwaysLog": "allErrors",
+                        "sampling": {
+                            "percentage": 100,
+                            "samplingType": "fixed"
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,35 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "subscriptionId": {
+            "value": "<SUBSCRIPTION_ID>"
+        },
+        "name": {
+            "value": "<FUNCTION_APP_NAME>"
+        },
+        "location": {
+            "value": "<LOCATION>"
+        },
+        "hostingPlanName": {
+            "value": "<APP_SERVICE_PLAN_NAME>"
+        },
+        "serverFarmResourceGroup": {
+            "value": "<RESOURCE_GROUP>"
+        },
+        "alwaysOn": {
+            "value": true
+        },
+        "storageAccountName": {
+            "value": "<FUNCTION_APP_STORAGE_ACCNT>"
+        },
+        "use32BitWorkerProcess": {
+            "value": true
+        },
+        "tags": {
+            "value": {
+              "": ""
+            }
+        }
+    }
+}

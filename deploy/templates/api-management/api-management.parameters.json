@@ -1,0 +1,78 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "value": "<LOCATION>"
+        },
+        "apimName": {
+            "value": "<APIMGMT_NAME>"
+        },
+        "organizationName": {
+            "value": "<ORGANIZATION>"
+        },
+        "adminEmail": {
+            "value": "<ADMIN_EMAIL_ADDRESS>"
+        },
+        "tier": {
+            "value": "Developer"
+        },
+        "appInsightsOption": {
+            "value": true
+        },
+        "appInsightsObject": {
+            "value": {
+                "name": "<APP_INSIGHTS_NAME>",
+                "id": "<APP_INSIGHTS_RESOURCE_ID>"
+            }
+        },
+        "appInsightsInstrumentationKey": {
+            "value": "<APP_INSIGHTS_INSTRUMENTATION_KEY>"
+        },
+        "capacity": {
+            "value": ""
+        },
+        "identity": {
+            "value": {
+                "type": "SystemAssigned"
+            }
+        },
+        "virtualNetworkType": {
+            "value": "None"
+        },
+        "vnet": {
+            "value": {}
+        },
+        "tripleDES": {
+            "value": false
+        },
+        "http2": {
+            "value": false
+        },
+        "clientTls11": {
+            "value": false
+        },
+        "clientTls10": {
+            "value": false
+        },
+        "clientSsl30": {
+            "value": false
+        },
+        "backendTls11": {
+            "value": false
+        },
+        "backendTls10": {
+            "value": false
+        },
+        "backendSsl30": {
+            "value": false
+        },
+        "tagsByResource": {
+            "value": {
+                "Microsoft.ApiManagement/service": {
+                    "": ""
+                }
+            }
+        }
+    }
+}
